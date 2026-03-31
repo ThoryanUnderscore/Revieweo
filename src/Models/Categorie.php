@@ -1,12 +1,15 @@
 <?php
-class Categorie {
-    private $pdo;
 
-    public function __construct($db) {
-        $this->pdo = $db;
+namespace App\Models;
+
+class Categorie extends BaseModel {
+    protected $table = 'Categorie';
+
+    public function findByNom($nom) {
+        return $this->findWhere(['nom' => $nom]);
     }
 
-    public function getAll() {
-        return $this->pdo->query("SELECT * FROM Categorie")->fetchAll();
+    public function createCategory($nom) {
+        return $this->create(['nom' => $nom]);
     }
 }

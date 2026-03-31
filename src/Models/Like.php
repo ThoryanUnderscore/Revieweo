@@ -1,22 +1,47 @@
 <?php
-class Like {
-    private $pdo;
 
-    public function __construct($db) {
-        $this->pdo = $db;
+namespace App\Models;
+
+class Like extends BaseModel {
+    protected $table = 'Like_Critique';
+
+    public function addLike($userId, $critiqueId) {
+        $query = 'INSERT INTO Like_Critique (id_user, id_critique) 
+                  VALUES (:userId, :critiqueId)';
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute([
+            ':userId' => $userId,
+            ':critiqueId' => $critiqueId
+        ]);
     }
 
-    // Ajouter ou retirer un like (Toggle)
-    public function toggleLike($id_user, $id_critique) {
-        $stmt = $this->pdo->prepare("SELECT * FROM `Like` WHERE id_user = ? AND id_critique = ?");
-        $stmt->execute([$id_user, $id_critique]);
-        
-        if ($stmt->fetch()) {
-            return $this->pdo->prepare("DELETE FROM `Like` WHERE id_user = ? AND id_critique = ?")
-                             ->execute([$id_user, $id_critique]);
-        } else {
-            return $this->pdo->prepare("INSERT INTO `Like` (id_user, id_critique) VALUES (?, ?)")
-                             ->execute([$id_user, $id_critique]);
-        }
+    public function removeLike($userId, $critiqueId) {
+        $query = 'DELETE FROM Like_Critique 
+                  WHERE id_user = :userId AND id_critique = :critiqueId';
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute([
+            ':userId' => $userId,
+            ':critiqueId' => $critiqueId
+        ]);
+    }
+
+    public function userLikedCritique($userId, $critiqueId) {
+        $query = 'SELECT COUNT(*) as total FROM Like_Critique 
+                  WHERE id_user = :userId AND id_critique = :critiqueId';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute([
+            ':userId' => $userId,
+            ':critiqueId' => $critiqueId
+        ]);
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
+        return $result->total > 0;
+    }
+
+    public function countLikesByCritique($critiqueId) {
+        $query = 'SELECT COUNT(*) as total FROM Like_Critique WHERE id_critique = :critiqueId';
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute([':critiqueId' => $critiqueId]);
+        $result = $stmt->fetch(\PDO::FETCH_OBJ);
+        return $result->total;
     }
 }
