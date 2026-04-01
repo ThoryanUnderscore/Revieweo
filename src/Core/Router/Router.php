@@ -1,7 +1,10 @@
 <?php
 
+namespace Src\Core\Router;
+
 use Src\Controllers\AuthController;
 use Src\Controllers\CritiqueController;
+use Src\Controllers\LikeController;
 
 class Router {
     private $db;
@@ -11,34 +14,43 @@ class Router {
     }
 
     public function run() {
-        // On récupère la page demandée, sinon 'home' par défaut
         $page = isset($_GET['page']) ? $_GET['page'] : 'home';
 
         switch ($page) {
             case 'home':
-                require_once 'app/Controllers/CritiqueController.php';
                 $controller = new CritiqueController($this->db);
-                $controller->index();
-                break;
-
-            case 'critique':
-                // Pour afficher la critique n°1 : index.php?page=critique&id=1
-                $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-                require_once 'app/Controllers/CritiqueController.php';
-                $controller = new CritiqueController($this->db);
-                $controller->show($id);
+                $controller->home();
                 break;
 
             case 'login':
-                require_once 'app/Controllers/AuthController.php';
                 $controller = new AuthController($this->db);
                 $controller->login();
                 break;
 
+            case 'register':                
+                $controller = new AuthController($this->db);
+                $controller->register();
+                break;
+
             case 'logout':
-                require_once 'app/Controllers/AuthController.php';
                 $controller = new AuthController($this->db);
                 $controller->logout();
+                break;
+
+            case 'add-critique':
+                $controller = new CritiqueController($this->db);
+                $controller->add();
+                break;
+
+            case 'detail':
+                $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
+                $controller = new CritiqueController($this->db);
+                $controller->show($id);
+                break;
+
+            case 'like':
+                $controller = new LikeController($this->db);
+                $controller->toggle();
                 break;
 
             default:

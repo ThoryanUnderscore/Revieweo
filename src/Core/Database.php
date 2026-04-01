@@ -1,13 +1,15 @@
 <?php
+namespace Src\Core;
+use PDO;
+use PDOException;
 class Database {
     private static $instance = null;
 
     public static function getConnection() {
         if (self::$instance === null) {
             try {
-                // Remplace par tes vrais identifiants
                 $host = 'localhost';
-                $db   = 'revieweo_db';
+                $db   = 'revieweo';
                 $user = 'root';
                 $pass = '';
                 

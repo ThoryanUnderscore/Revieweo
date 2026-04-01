@@ -1,47 +1,70 @@
 <?php
-
 namespace Src\Controllers;
-use Critique;
+
+use Src\Models\Critique;
+use Src\Models\Categorie;
 
 class CritiqueController {
-    private $model;
+    private $critiqueModel;
+    private $db;
 
     public function __construct($db) {
-        $this->model = new Critique($db);
+        $this->db = $db;
+        $this->critiqueModel = new Critique($db);
     }
 
-    // Affiche la liste (Page d'accueil/Listing) [cite: 47]
-    public function index() {
-        $critiques = $this->model->findAll();
-        require_once 'views/home/listing.php';
-    }
-
-    // Affiche UNE seule critique (ex: /critique/1) [cite: 48]
     public function show($id) {
-        $critique = $this->model->findById($id);
-        if (!$critique) {
-            die("Critique introuvable.");
-        }
-        require_once 'views/critique/detail.php';
+        $critique = $this->critiqueModel->findById($id);
+        if (!$critique) { header("Location: index.php?page=home"); exit; }
+        
+        $title = $critique['titre'];
+        ob_start();
+        require_once __DIR__ . '/../../template/critique/detail.php';
+        $content = ob_get_clean();
+        
+        require_once __DIR__ . '/../../template/layout/layout.php';
     }
 
-    // Formulaire de création (réservé aux Critiques/Admin) [cite: 53, 56]
-    public function create() {
-        if ($_SESSION['role'] < 2) { // 2 = Critique [cite: 32]
-            header('Location: index.php?error=access_denied');
+    public function home() {
+        $search = $_GET['search'] ?? null;
+        $critiques = $this->critiqueModel->findAll($search);
+
+        if (isset($_GET['ajax'])) {
+            require_once __DIR__ . '/../../template/home/listing.php';
             exit;
         }
 
+        $title = "Accueil";
+        ob_start();
+        require_once __DIR__ . '/../../template/home/listing.php';
+        $content = ob_get_clean();
+        require_once __DIR__ . '/../../template/layout/layout.php';
+    }
+
+    public function add() {
+        if (!isset($_SESSION['role']) || $_SESSION['role'] < 1) {
+            header("Location: index.php?page=login"); exit;
+        }
+
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $success = $this->model->save(
+            $this->critiqueModel->save(
                 $_POST['titre'], 
                 $_POST['contenu'], 
                 $_POST['note'], 
-                $_SESSION['user_id'],
+                $_SESSION['user_id'], 
                 $_POST['id_categorie']
             );
-            if ($success) header('Location: index.php?success=1');
+            header("Location: index.php?page=home"); exit;
         }
-        require_once 'views/critique/form.php';
+
+        $catModel = new Categorie($this->db);
+        $catModel->ensureDefaultCategories();
+        $categories = $catModel->getAll();
+        $title = "Rédiger une critique";
+        
+        ob_start();
+        require_once __DIR__ . '/../../template/critique/form.php';
+        $content = ob_get_clean();
+        require_once __DIR__ . '/../../template/layout/layout.php';
     }
 }

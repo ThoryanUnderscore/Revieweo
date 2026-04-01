@@ -1,65 +1,29 @@
 <?php
+namespace Src\Models;
 
-namespace App\Models;
+class User {
+    private $pdo;
 
-class User extends BaseModel {
-    protected $table = 'User';
-
-    public function findByEmail($email) {
-        return $this->findWhere(['email' => $email]);
+    public function __construct($db) {
+        $this->pdo = $db;
     }
 
-    public function findByPseudo($pseudo) {
-        return $this->findWhere(['pseudo' => $pseudo]);
-    }
-
+    // Inscription (Create)
     public function register($pseudo, $email, $password, $role = 0) {
-        // Hacher le mot de passe
-        $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-
-        return $this->create([
-            'pseudo' => $pseudo,
-            'email' => $email,
-            'password' => $hashedPassword,
-            'role' => $role
-        ]);
+        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $sql = "INSERT INTO User (pseudo, email, password, role) VALUES (?, ?, ?, ?)";
+        return $this->pdo->prepare($sql)->execute([$pseudo, $email, $hash, $role]);
     }
 
-    public function authenticate($email, $password) {
-        $user = $this->findByEmail($email);
-        
-        if ($user && password_verify($password, $user->password)) {
+    // Connexion (Read)
+    public function login($email, $password) {
+        $sql = "SELECT * FROM User WHERE email = ?";
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute([$email]);
+        $user = $stmt->fetch();
+        if ($user && password_verify($password, $user['password'])) {
             return $user;
         }
-
-        return null;
-    }
-
-    public function getAllCritiques() {
-        $query = 'SELECT * FROM ' . $this->table . ' WHERE role = 1';
-        $stmt = $this->pdo->query($query);
-        return $stmt->fetchAll(\PDO::FETCH_OBJ);
-    }
-
-    public function isAdmin($id) {
-        $user = $this->find($id);
-        return $user && $user->role === 2;
-    }
-
-    public function isCritique($id) {
-        $user = $this->find($id);
-        return $user && ($user->role === 1 || $user->role === 2);
-    }
-
-    public function promoteToCritique($id) {
-        return $this->update($id, ['role' => 1]);
-    }
-
-    public function promoteToAdmin($id) {
-        return $this->update($id, ['role' => 2]);
-    }
-
-    public function demoteToUser($id) {
-        return $this->update($id, ['role' => 0]);
+        return false;
     }
 }
