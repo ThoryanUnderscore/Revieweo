@@ -1,0 +1,48 @@
+/* Style personnalisé pour Revieweo */
+
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.navbar {
+    border-bottom: 3px solid #ffc107; /* Rappel de la couleur "Gold" pour les notes */
+}
+
+.card {
+    transition: transform 0.2s;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+.badge-note {
+    font-size: 1.1rem;
+    padding: 0.5em 0.8em;
+}
+
+/* Style pour le bouton Like */
+.like-btn {
+    transition: all 0.3s ease;
+}
+
+.like-btn.active {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Zone de contenu des critiques */
+.critique-content {
+    line-height: 1.8;
+    color: #333;
+}
+
+footer {
+    margin-top: 50px;
+    padding: 20px 0;
+    background: #212529;
+    color: white;
+    text-align: center;
+}

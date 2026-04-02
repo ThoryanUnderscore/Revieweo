@@ -1,0 +1,15 @@
+# Dépendances PHP
+/vendor/
+
+# Configuration Composer (optionnel selon les goûts, mais souvent exclu)
+composer.phar
+.phpunit.result.cache
+
+# Fichiers système et IDE
+.DS_Store
+.vscode/
+.idea/
+
+# Fichiers de configuration sensibles (Si tu as un fichier .env ou config_db.php local)
+config/db_config.php
+.env
